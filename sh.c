@@ -41,22 +41,36 @@ int sh( int argc, char **argv, char **envp )
 
   while ( go )
   { //ALL TODO
-  
-    printf("\n[%s]", prompt);                         /* print your prompt */
+    /* print your prompt */
+    printf("\n[%s]", prompt);                         
+     /* get command line and process */
     readInput(commandline);
-    stringToArray(commandline);
-    
-                          /* get command line and process */
+    args = stringToArray(commandline);
 
-                          /* check for each built in command and implement */
+    if (strcmp(args[0], "exit") == 0) {
+      go = 0; //run = false
+      /* check for each built in command and implement */
+    } else {
+      char* absPath = where(args[0], pathlist);   
+      if (absPath == NULL) {
+        printf("Command not found: %s\n", args[0]);
+      } else {
+        int pid = fork();
+        if (pid == 0) { //child process
+        /*  else  program to exec */ 
+          execve(absPath, args, envp);
+          printf("ERROR"); //Code should never reach here! If it does there is a problem!
+          exit(0);
+        } else { //parent process
+          waitpid(pid, NULL, 0);
+        }
+      }
+                          
+    /* find it */
+    /* do fork(), execve() and waitpid() */
 
-                          /*  else  program to exec */
-    {
-                          /* find it */
-                          /* do fork(), execve() and waitpid() */
-
-                          /* else */
-                            /* fprintf(stderr, "%s: Command not found.\n", args[0]); */
+    /* else */
+      /* fprintf(stderr, "%s: Command not found.\n", args[0]); */
     }
   }
   return 0;
