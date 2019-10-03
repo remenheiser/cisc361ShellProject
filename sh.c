@@ -78,13 +78,14 @@ char *where(char *command, struct pathelement *pathlist )
 { //TODO
   /* similarly loop through finding all locations of command */
   pathlist = get_path();
+  char* result = "";
   while (pathlist->next != NULL) {
     if (strcmp(pathlist->element, command) == 0) {
-      return (char *)pathlist;
+       result = strcat(result, pathlist->element);
     } 
     pathlist = pathlist->next;
   }
-  return NULL;
+  return result;
 } /* where() */
 
 void list ( char *dir )
