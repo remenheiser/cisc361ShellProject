@@ -41,6 +41,7 @@ int sh( int argc, char **argv, char **envp )
 
   while ( go )
   { //ALL TODO
+
     /* print your prompt */
 
     /* get command line and process */
@@ -67,10 +68,10 @@ char *which(char *command, struct pathelement *pathlist )
   while (pathlist->next != NULL) {
     if (strcmp(pathlist->element, command) == 0) {
       return command;
-    } else {
-      return NULL;
-    }
+    } 
+    pathlist = pathlist->next;
   }
+  return NULL;
 } /* which() */
 
 char *where(char *command, struct pathelement *pathlist )
@@ -79,11 +80,11 @@ char *where(char *command, struct pathelement *pathlist )
   pathlist = get_path();
   while (pathlist->next != NULL) {
     if (strcmp(pathlist->element, command) == 0) {
-      return pathlist;
-    } else {
-      return NULL;
-    }
+      return (char *)pathlist;
+    } 
+    pathlist = pathlist->next;
   }
+  return NULL;
 } /* where() */
 
 void list ( char *dir )
