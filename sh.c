@@ -63,17 +63,33 @@ char *which(char *command, struct pathelement *pathlist )
 { //TODO
    /* loop through pathlist until finding command and return it.  Return
    NULL when not found. */
-
+  pathlist = get_path();
+  while (pathlist->next != NULL) {
+    if (strcmp(pathlist->element, command) == 0) {
+      return command;
+    } else {
+      return NULL;
+    }
+  }
 } /* which() */
 
 char *where(char *command, struct pathelement *pathlist )
 { //TODO
   /* similarly loop through finding all locations of command */
+  pathlist = get_path();
+  while (pathlist->next != NULL) {
+    if (strcmp(pathlist->element, command) == 0) {
+      return pathlist;
+    } else {
+      return NULL;
+    }
+  }
 } /* where() */
 
 void list ( char *dir )
 { //TODO
   /* see man page for opendir() and readdir() and print out filenames for
   the directory passed */
+  
 } /* list() */
 
