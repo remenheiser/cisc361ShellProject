@@ -84,15 +84,16 @@ int sh( int argc, char **argv, char **envp )
         pwd = getcwd(*args, 2*BUFFERSIZE);
         free(pwd);
       } else {
-         printf("\nNo such directory exists\n");
+        printf("\nNo such directory exists\n");
       }
     } 
 //-----------LS----------------------------------------------------------------------------------    
     else if (strcmp(args[0], "list") == 0) {
-      if (sizeof(args[1]) != 0) {
-        list(args[1]);
+      if (sizeof(argc) == 0) {
+        list(pwd);
+        free(pwd);
       } else {
-        pwd = getcwd(args[1], BUFFERSIZE);
+        pwd = getcwd(args[1], 2*BUFFERSIZE);
         list(pwd);
         free(pwd);
       }
