@@ -88,8 +88,8 @@ int sh( int argc, char **argv, char **envp )
       }
     } 
 //-----------LS----------------------------------------------------------------------------------    
-    else if (strcmp(args[0], "list") == 0) {
-      if (sizeof(argc) == 0) {
+    else if (strcmp(args[0], "list") == 0) { //Almost works
+      if (argc == 0) {
         list(pwd);
         free(pwd);
       } else {
@@ -98,7 +98,10 @@ int sh( int argc, char **argv, char **envp )
         free(pwd);
       }
     }
-    
+ //----------PID---------------------------------------------------------------------------------
+    else if (strcmp(args[0], "pid") == 0) {
+      printf("\nPID of remenheiser shell: %ld", (long)getpid());
+    }
     
     //check for built in commands like exit, use extra if elses
     
