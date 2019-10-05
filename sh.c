@@ -89,13 +89,13 @@ int sh( int argc, char **argv, char **envp )
     } 
 //-----------LS----------------------------------------------------------------------------------    
     else if (strcmp(args[0], "list") == 0) { //Almost works
-      if (argc == 0) {
-        list(pwd);
-        free(pwd);
-      } else {
+      if (sizeof(args[1]) != 0) {
+        chdir(args[1]);
         pwd = getcwd(args[1], 2*BUFFERSIZE);
         list(pwd);
         free(pwd);
+      } else {
+        list(pwd);
       }
     }
  //----------PID---------------------------------------------------------------------------------
