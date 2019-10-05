@@ -39,22 +39,28 @@ int sh( int argc, char **argv, char **envp )
   /* Put PATH into a linked list */
   pathlist = get_path();
 
+  printf("\nWelcome to the remenheiser shell!!!\n");
   while ( go )
   { //ALL TODO
     /* print your prompt */
-    printf("\n[%s] ", pwd);                         
+    printf("\n[%s] > ", pwd);                         
      /* get command line and process */
     readInput(commandline);
     args = stringToArray(commandline);
-
+//-----------EXIT---------------------------------------------------------------------------------
     if (strcmp(args[0], "exit") == 0) {
       go = 0; //run = false
+      printf("\nExiting remenheiser shell...\n");
       /* check for each built in command and implement */
-    } else if (strcmp(args[0], "pwd") == 0) { // Print working directory
+    } 
+//-----------PWD----------------------------------------------------------------------------------
+    else if (strcmp(args[0], "pwd") == 0) { // Print working directory
       pwd = getcwd(*args, BUFFERSIZE);
       printf("%s\n", pwd);
       free(pwd);
-    } else if (strcmp(args[0], "cd") == 0) {
+    } 
+ //----------CD-----------------------------------------------------------------------------------   
+    else if (strcmp(args[0], "cd") == 0) {
       //break into cases based on args[1]
       if (strcmp(args[1], "/") == 0) { //Works
         chdir("/");
@@ -68,19 +74,27 @@ int sh( int argc, char **argv, char **envp )
         chdir("..");
         pwd = getcwd(args[1], 2*BUFFERSIZE);
         free(pwd);
-      } else if (strcmp(args[1], "home") == 0) { //Why can't this work with ""? Ask silber
+      } else if (strcmp(args[1], "home") == 0) { //Why can't this work with ""? Ask silber, space leads to seg fault
         chdir("/Users");
         pwd = getcwd(args[1], BUFFERSIZE);
         free(pwd);
       } else if (strcmp(args[1], "") == 0) {
         printf("\ntype ""cd home"" to go to /Users\n");
+      } else if (chdir(args[1]) == 0) { //Works
+        pwd = getcwd(*args, 2*BUFFERSIZE);
+        free(pwd);
       } else {
-        if (chdir(args[1]) == 0) { //Works
-          pwd = getcwd(*args, 2*BUFFERSIZE);
-          free(pwd);
-        } else {
-          printf("\nNo such directory exists\n");
-        }
+         printf("\nNo such directory exists\n");
+      }
+    } 
+//-----------LS----------------------------------------------------------------------------------    
+    else if (strcmp(args[0], "list") == 0) {
+      if (sizeof(args[1]) != 0) {
+        list(args[1]);
+      } else {
+        pwd = getcwd(args[1], BUFFERSIZE);
+        list(pwd);
+        free(pwd);
       }
     }
     
@@ -192,6 +206,20 @@ void list ( char *dir )
 { //TODO
   /* see man page for opendir() and readdir() and print out filenames for
   the directory passed */
-  
+  DIR *directory = opendir(dir);
+  struct dirent *direntp;
+
+  if (directory == NULL) {
+    printf("\nDirectory does not exist\n");
+  } else {
+    for (;;) {
+      direntp = readdir(directory);
+      if (direntp == NULL) 
+        break;
+      
+      printf("\n%s", direntp->d_name);
+    }
+    closedir(directory);
+  }
 } /* list() */
 
