@@ -42,7 +42,7 @@ int sh( int argc, char **argv, char **envp )
   while ( go )
   { //ALL TODO
     /* print your prompt */
-    printf("\n[%s]", prompt);                         
+    printf("\n[%s] ", pwd);                         
      /* get command line and process */
     readInput(commandline);
     args = stringToArray(commandline);
@@ -50,7 +50,44 @@ int sh( int argc, char **argv, char **envp )
     if (strcmp(args[0], "exit") == 0) {
       go = 0; //run = false
       /* check for each built in command and implement */
-    } else {
+    } else if (strcmp(args[0], "pwd") == 0) { // Print working directory
+      pwd = getcwd(*args, BUFFERSIZE);
+      printf("%s\n", pwd);
+      free(pwd);
+    } else if (strcmp(args[0], "cd") == 0) {
+      //break into cases based on args[1]
+      if (strcmp(args[1], "/") == 0) { //Works
+        chdir("/");
+        pwd = getcwd(args[1], BUFFERSIZE);
+        free(pwd);
+      } else if (strcmp(args[1], ".") == 0) { //Works
+        chdir(".");
+        pwd = getcwd(*args, 2*BUFFERSIZE);
+        free(pwd);
+      } else if (strcmp(args[1], "..") == 0) { //Works
+        chdir("..");
+        pwd = getcwd(args[1], 2*BUFFERSIZE);
+        free(pwd);
+      } else if (strcmp(args[1], "home") == 0) { //Why can't this work with ""? Ask silber
+        chdir("/Users");
+        pwd = getcwd(args[1], BUFFERSIZE);
+        free(pwd);
+      } else if (strcmp(args[1], "") == 0) {
+        printf("\ntype ""cd home"" to go to /Users\n");
+      } else {
+        if (chdir(args[1]) == 0) { //Works
+          pwd = getcwd(*args, 2*BUFFERSIZE);
+          free(pwd);
+        } else {
+          printf("\nNo such directory exists\n");
+        }
+      }
+    }
+    
+    
+    //check for built in commands like exit, use extra if elses
+    
+    else {
       char* absPath = where(args[0], pathlist);   
       if (absPath == NULL) {
         printf("Command not found: %s\n", args[0]);
