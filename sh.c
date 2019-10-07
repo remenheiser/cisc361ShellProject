@@ -57,32 +57,32 @@ int sh( int argc, char **argv, char **envp )
     else if (strcmp(args[0], "pwd") == 0) { // Print working directory
       pwd = getcwd(*args, BUFFERSIZE);
       printf("%s\n", pwd);
-      free(pwd);
+      //free(pwd);
     } 
- //----------CD-----------------------------------------------------------------------------------   
+//-----------CD-----------------------------------------------------------------------------------   
     else if (strcmp(args[0], "cd") == 0) {
       //break into cases based on args[1]
       if (strcmp(args[1], "/") == 0) { //Works
         chdir("/");
         pwd = getcwd(args[1], BUFFERSIZE);
-        free(pwd);
+        //free(pwd);
       } else if (strcmp(args[1], ".") == 0) { //Works
         chdir(".");
         pwd = getcwd(*args, 2*BUFFERSIZE);
-        free(pwd);
+        //free(pwd);
       } else if (strcmp(args[1], "..") == 0) { //Works
         chdir("..");
         pwd = getcwd(args[1], 2*BUFFERSIZE);
-        free(pwd);
+        //free(pwd);
       } else if (strcmp(args[1], "home") == 0) { //Why can't this work with ""? Ask silber, space leads to seg fault
         chdir("/Users");
         pwd = getcwd(args[1], BUFFERSIZE);
-        free(pwd);
-      } else if (strcmp(args[1], "") == 0) {
+        //free(pwd);
+      } else if (strcmp(args[1], "") == 0) { //Does not work yet
         printf("\ntype ""cd home"" to go to /Users\n");
       } else if (chdir(args[1]) == 0) { //Works
         pwd = getcwd(*args, 2*BUFFERSIZE);
-        free(pwd);
+        //free(pwd);
       } else {
         printf("\nNo such directory exists\n");
       }
@@ -93,7 +93,7 @@ int sh( int argc, char **argv, char **envp )
         chdir(args[1]);
         pwd = getcwd(args[1], 2*BUFFERSIZE);
         list(pwd);
-        free(pwd);
+        //free(pwd);
       } else {
         list(pwd);
       }
@@ -128,8 +128,27 @@ int sh( int argc, char **argv, char **envp )
       /* fprintf(stderr, "%s: Command not found.\n", args[0]); */
     }
   }
+  freeList(pathlist);
+  //free(args); not freed properly
+  free(owd);
+  free(pwd);
+  free(commandline);
+  free(prompt);
   return 0;
 } /* sh() */
+
+void freeList(struct pathelement *pathlist) {
+  struct pathelement *head;
+
+  while (pathlist != NULL) {
+    head = pathlist;
+    pathlist = pathlist->next;
+    free(head);
+  }
+  free(pathlist);
+}
+
+
 
 //readInput() reads standard input and puts it into a buffer. Helps allow strings with spaces
 char readInput(char* buffer) {
@@ -142,17 +161,15 @@ char readInput(char* buffer) {
 }
 
 
-char **stringToArray(char *input)
-{
+char **stringToArray(char *input) {
   // make a copy of array
-  char buff[BUFFERSIZE];
+  char buff[BUFFERSIZE] = "";
   strcpy(buff, input);
   char *t = strtok(buff, " "); // this returns the first word (if empty string it returns NULL)
-  int count;
+  int count = 0;
 
   // call strtok over and over until you determine how long it is
-  while (strtok(NULL, " "))
-  {
+  while (strtok(NULL, " ")) {
     count++;
   }
 
@@ -163,18 +180,15 @@ char **stringToArray(char *input)
   strcpy(buff, input);
   t = strtok(buff, " ");
 
-  while (t)
-  {
+  while (t) {
     int len = strlen(t);
     argv[count] = (char*)malloc((len + 1) * sizeof(char*));
     strcpy(argv[count], t);
     count++;
     t = strtok(NULL, " ");
   }
-
   return argv;
 }
-
 
 char *which(char *command, struct pathelement *pathlist )
 { //TODO

@@ -10,11 +10,12 @@
 struct pathelement *get_path()
 {
   /* path is a copy of the PATH and p is a temp pointer */
-  char *path, *p;
+  char *path = "";
+  char *p = "";
 
   /* tmp is a temp point used to create a linked list and pathlist is a
      pointer to the head of the list */
-  struct pathelement *tmp, *pathlist = NULL;
+  struct pathelement *tmp = NULL, *pathlist = NULL;
 
   p = getenv("PATH");	/* get a pointer to the PATH env var.
 			   make a copy of it, since strtok modifies the
@@ -40,5 +41,6 @@ struct pathelement *get_path()
     tmp->next = NULL;
   } while ( p = strtok(NULL, ":") );
 
+  free(path);
   return pathlist;
 } /* end get_path() */
