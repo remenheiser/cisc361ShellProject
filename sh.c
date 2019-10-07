@@ -130,6 +130,10 @@ int sh( int argc, char **argv, char **envp )
   }
   freeList(pathlist);
   //free(args); not freed properly
+  for (int i = 0; i < sizeof(args); i+=8) {
+    free(args[i]);
+  }
+  free(args);
   free(owd);
   free(pwd);
   free(commandline);
