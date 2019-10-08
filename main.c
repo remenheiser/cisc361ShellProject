@@ -7,8 +7,12 @@ void sig_handler(int signal);
 int main( int argc, char **argv, char **envp )
 {
   /*TODO put signal set up stuff here */
-
-  return sh(argc, argv, envp);
+  int result = sh(argc, argv, envp);
+  //  for (int i = 0; i < sizeof(argv); i+=8) {
+  //  free(argv[i]);
+  // }
+  // free(argv);
+  return result;
 }
 
 void sig_handler(int signal)
