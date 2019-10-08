@@ -11,7 +11,6 @@ int main( int argc, char **argv, char **envp )
   //  for (int i = 0; i < sizeof(argv); i+=8) {
   //  free(argv[i]);
   // }
-  // free(argv);
   return result;
 }
 

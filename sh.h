@@ -3,7 +3,7 @@
 
 int pid;
 int sh( int argc, char **argv, char **envp);
-char **stringToArray(char *input);
+char **stringToArray(char *input, char** argv);
 char readInput(char* buffer);
 char *which(char *command, struct pathelement *pathlist);
 char *where(char *command, struct pathelement *pathlist);

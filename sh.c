@@ -44,7 +44,7 @@ int sh(int argc, char **argv, char **envp) {
         printf("\n[%s] > ", pwd);
         /* get command line and process */
         readInput(commandline);
-        args = stringToArray(commandline);
+        args = stringToArray(commandline, argv);
         //-----------EXIT---------------------------------------------------------------------------------
         if (strcmp(args[0], "exit") == 0) {
             go = 0;  //run = false
@@ -54,10 +54,14 @@ int sh(int argc, char **argv, char **envp) {
         //-----------PWD----------------------------------------------------------------------------------
         else if (strcmp(args[0], "pwd") == 0) {  // Print working directory
             pwd = getcwd(*args, BUFFERSIZE);
-            printf("%s\n", pwd);
+            printf("[%s]\n", pwd);
             //free(pwd);
         }
         //-----------CD-----------------------------------------------------------------------------------
+        else if (args[1] == NULL) {
+            chdir("/usa");
+            pwd = getcwd(args[1], BUFFERSIZE);
+        }
         else if (strcmp(args[0], "cd") == 0) {
             //break into cases based on args[1]
             if (strcmp(args[1], "/") == 0) {  //Works
@@ -66,21 +70,12 @@ int sh(int argc, char **argv, char **envp) {
                 //free(pwd);
             } else if (strcmp(args[1], ".") == 0) {  //Works
                 chdir(".");
-                pwd = getcwd(*args, 2 * BUFFERSIZE);
+                //pwd = getcwd(*args, 2 * BUFFERSIZE);
                 //free(pwd);
             } else if (strcmp(args[1], "..") == 0) {  //Works
                 chdir("..");
                 pwd = getcwd(args[1], 2 * BUFFERSIZE);
                 //free(pwd);
-            } else if (strcmp(args[1], "home") == 0) {  //Why can't this work with ""? Ask silber, space leads to seg fault
-                chdir("/Users");
-                pwd = getcwd(args[1], BUFFERSIZE);
-                //free(pwd);
-            } else if (strcmp(args[1], "") == 0) {  //Does not work yet
-                printf(
-                    "\ntype "
-                    "cd home"
-                    " to go to /Users\n");
             } else if (chdir(args[1]) == 0) {  //Works
                 pwd = getcwd(*args, 2 * BUFFERSIZE);
                 //free(pwd);
@@ -127,7 +122,7 @@ int sh(int argc, char **argv, char **envp) {
                     printf("ERROR");  //Code should never reach here! If it does there is a problem!
                     exit(0);
                 } else {  //parent process
-                    waitpid(pid, NULL, 0);
+                    pid = waitpid(pid, NULL, 0);
                 }
             }
 
@@ -139,10 +134,7 @@ int sh(int argc, char **argv, char **envp) {
         }
     }
     freeList(pathlist);
-    //free(args); not freed properly
-    for (int i = 0; i < sizeof(args); i += 8) {
-        free(args[i]);
-    }
+    args = NULL;
     free(args);
     free(owd);
     free(pwd);
@@ -172,7 +164,7 @@ char readInput(char *buffer) {
     return length;
 }
 
-char **stringToArray(char *input) {
+char **stringToArray(char *input, char** argv) {
     // make a copy of array
     char buff[BUFFERSIZE] = "";
     strcpy(buff, input);
@@ -183,8 +175,7 @@ char **stringToArray(char *input) {
     while (strtok(NULL, " ")) {
         count++;
     }
-
-    char **argv = malloc((count + 1) * sizeof(char *));
+    //char **argv = malloc((count + 1) * sizeof(char *));
     argv[count] = NULL;
 
     count = 0;
