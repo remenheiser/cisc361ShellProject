@@ -69,10 +69,8 @@ int sh(int argc, char **argv, char **envp) {
         //-----------CD-----------------------------------------------------------------------------------
         else if (strcmp(args[0], "cd") == 0) {
             //break into cases based on args[1]
-            if (args[1] == NULL) {
+            if (args[1] == '\0') {
                 chdir("/usa");
-                free(pwd);
-                pwd = getcwd(args[1], BUFFERSIZE);
                 free(args[0]);
             } else if (strcmp(args[1], "/") == 0) {  //Works
                 chdir("/");
@@ -100,20 +98,19 @@ int sh(int argc, char **argv, char **envp) {
         }
         //-----------LS----------------------------------------------------------------------------------
         else if (strcmp(args[0], "list") == 0) {  //Almost works
-            if (args[1] == NULL) {
+            if (args[1] == '\0') {
                 list(pwd);
                 free(args[0]);
                 free(args);
             } else {
-                free(pwd);
                 char *tempPwd = pwd;
                 if (chdir(args[1]) == 0) {
-                    pwd = getcwd(args[1], 2 * BUFFERSIZE);
-                    list(pwd);
-                    chdir(tempPwd);
-                    pwd = getcwd(args[1], 2 * BUFFERSIZE);
-                } else {
+                    tempPwd = getcwd(args[1], 2 * BUFFERSIZE);
                     list(tempPwd);
+                    free(tempPwd);
+                } else {
+                    printf("No such directory exists");
+                    free(args[1]);
                 }
                 free(args[0]);
                 free(args);
