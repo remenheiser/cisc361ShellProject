@@ -56,6 +56,8 @@ int sh(int argc, char **argv, char **envp) {
             printf("\nExiting remenheiser shell...\n");
             free(args[0]);
             free(args);
+            free(owd);
+            free(pwd);
             /* check for each built in command and implement */
         }
         //-----------PWD----------------------------------------------------------------------------------
@@ -69,31 +71,41 @@ int sh(int argc, char **argv, char **envp) {
             //break into cases based on args[1]
             if (args[1] == NULL) {
                 chdir("/usa");
+                free(pwd);
                 pwd = getcwd(args[1], BUFFERSIZE);
                 free(args[0]);
-                free(args);
             } else if (strcmp(args[1], "/") == 0) {  //Works
                 chdir("/");
+                free(pwd);
                 pwd = getcwd(args[1], BUFFERSIZE);
+                free(args[0]);
             } else if (strcmp(args[1], ".") == 0) {  //Works
                 chdir(".");
+                free(args[1]);
+                free(args[0]);
             } else if (strcmp(args[1], "..") == 0) {  //Works
                 chdir("..");
+                free(pwd);
                 pwd = getcwd(args[1], 2 * BUFFERSIZE);
+                free(args[0]);
             } else if (chdir(args[1]) == 0) {  //Works
+                free(pwd);
                 pwd = getcwd(*args, 2 * BUFFERSIZE);
+                free(args[1]);
             } else {
                 printf("\nNo such directory exists\n");
+                free(args[1]);
             }
-            free(args[1]);
-            free(args[0]);
             free(args);
         }
         //-----------LS----------------------------------------------------------------------------------
         else if (strcmp(args[0], "list") == 0) {  //Almost works
             if (args[1] == NULL) {
                 list(pwd);
+                free(args[0]);
+                free(args);
             } else {
+                free(pwd);
                 char *tempPwd = pwd;
                 if (chdir(args[1]) == 0) {
                     pwd = getcwd(args[1], 2 * BUFFERSIZE);
@@ -103,10 +115,9 @@ int sh(int argc, char **argv, char **envp) {
                 } else {
                     list(tempPwd);
                 }
-                free(args[1]);
+                free(args[0]);
+                free(args);
             }
-            free(args[0]);
-            free(args);
         }
         //----------PID----------------------------------------------------------------------------------
         else if (strcmp(args[0], "pid") == 0) {
@@ -140,6 +151,25 @@ int sh(int argc, char **argv, char **envp) {
                 free(args);
             }
         }
+        //----------KILL----------------------------------------------------------------------------------
+        else if (strcmp(args[0], "kill") == 0) {
+            if (args[1] == NULL) {
+                free(args[0]);
+                free(args);
+                free(pwd);
+                freeList(pathlist);
+                free(owd);
+                free(commandline);
+                free(prompt);
+                kill(pid, SIGTERM);
+            } else {
+                pid_t temp = (long) args[1];
+                kill(temp, SIGTERM);
+                free(args[1]);
+                free(args[0]);
+                free(args);
+            }
+        }
 
         //check for built in commands like exit, use extra if elses
         else {
@@ -158,21 +188,8 @@ int sh(int argc, char **argv, char **envp) {
                 }
             }
         }
-        // for (int i = argsct - 1; i >= 0; i--) {
-        //     free(args[i]);
-        // }
-        // free(args[0]);
-        // free(args);
     }
     freeList(pathlist);
-    printf("Argsct: %d\n", argsct);
-    // for (int i = argsct-1; i >= 0; i--) {
-    //     free(args[i]);
-    // }
-
-    // free(args);
-    free(owd);
-    free(pwd);
     free(commandline);
     free(prompt);
     return 0;
@@ -225,7 +242,6 @@ char **stringToArray(char *input, char **argv, int *argsCount) {
         *argsCount = count;
         t = strtok(NULL, " ");
     }
-    printf("count: %d\n", count);
     return argv;
 }
 
