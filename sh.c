@@ -72,7 +72,10 @@ int sh(int argc, char **argv, char **envp) {
             //break into cases based on args[1]
             if (argsct == 1) {
                 chdir("/usa");
-                free(args[0]);
+                free(pwd);
+                // pwd = getcwd(args[1], BUFFERSIZE);
+                // free(args[0]);
+                pwd = getcwd(*args, BUFFERSIZE);
             } else if (strcmp(args[1], "/") == 0) {  //Works
                 chdir("/");
                 free(pwd);
@@ -94,6 +97,7 @@ int sh(int argc, char **argv, char **envp) {
             } else {
                 printf("\nNo such directory exists\n");
                 free(args[1]);
+                free(args[0]);
             }
             free(args);
         }
@@ -125,7 +129,7 @@ int sh(int argc, char **argv, char **envp) {
         }
         //----------WHERE--------------------------------------------------------------------------------
         else if (strcmp(args[0], "where") == 0) {  //does not work yet
-            if (args[1] == NULL) {
+            if (argsct == 1) {
                 where(NULL, pathlist);
                 free(args[0]);
                 free(args);
@@ -138,7 +142,7 @@ int sh(int argc, char **argv, char **envp) {
         }
         //----------WHICH--------------------------------------------------------------------------------
         else if (strcmp(args[0], "which") == 0) {  //does not work yet
-            if (args[1] == NULL) {
+            if (argsct == 1) {
                 which(NULL, pathlist);
                 free(args[0]);
                 free(args);
@@ -151,7 +155,7 @@ int sh(int argc, char **argv, char **envp) {
         }
         //----------KILL----------------------------------------------------------------------------------
         else if (strcmp(args[0], "kill") == 0) {
-            if (args[1] == NULL) {
+            if (argsct == 1) {
                 free(args[0]);
                 free(args);
                 free(pwd);
@@ -168,7 +172,7 @@ int sh(int argc, char **argv, char **envp) {
                 free(args);
             }
         }
-
+        
         //check for built in commands like exit, use extra if elses
         else {
             char *absPath = where(args[0], pathlist);
