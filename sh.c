@@ -45,6 +45,7 @@ int sh(int argc, char **argv, char **envp) {
         /* get command line and process */
         readInput(commandline);
         args = stringToArray(commandline, argv, &argsct);
+      
         //-----------RETURN-------------------------------------------------------------------------------
         if (args[0] == '\0') {
             //Do Nothing
@@ -69,7 +70,7 @@ int sh(int argc, char **argv, char **envp) {
         //-----------CD-----------------------------------------------------------------------------------
         else if (strcmp(args[0], "cd") == 0) {
             //break into cases based on args[1]
-            if (args[1] == '\0') {
+            if (argsct == 1) {
                 chdir("/usa");
                 free(args[0]);
             } else if (strcmp(args[1], "/") == 0) {  //Works
@@ -98,7 +99,7 @@ int sh(int argc, char **argv, char **envp) {
         }
         //-----------LS----------------------------------------------------------------------------------
         else if (strcmp(args[0], "list") == 0) {  //Almost works
-            if (args[1] == '\0') {
+            if (argsct == 1) {
                 list(pwd);
                 free(args[0]);
                 free(args);
