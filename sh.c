@@ -45,6 +45,10 @@ int sh(int argc, char **argv, char **envp) {
       printf("%s[%s] > ",prompt ,pwd);
         /* get command line and process */
         readInput(commandline);
+	if (commandline == NULL) {
+	  continue;
+	  printf("\n");
+	}
         args = stringToArray(commandline, argv, &argsct);
       
         //-----------RETURN-------------------------------------------------------------------------------
@@ -70,17 +74,19 @@ int sh(int argc, char **argv, char **envp) {
         }
         //-----------CD-----------------------------------------------------------------------------------
         else if (strcmp(args[0], "cd") == 0) {
+            char buff[BUFFERSIZE] = "";
+            char *tempPwd = pwd;
             //break into cases based on args[1]
             if (argsct == 1) {
                 chdir("/usa");
-                free(pwd);
-                // pwd = getcwd(args[1], BUFFERSIZE);
-                // free(args[0]);
-                pwd = getcwd(args[1], BUFFERSIZE);
+                tempPwd = getcwd(buff, BUFFERSIZE);
+                memcpy(pwd, tempPwd, strlen(tempPwd) + 1);
+                free(args[0]);
             } else if (strcmp(args[1], "/") == 0) {  //Works
                 chdir("/");
-                free(pwd);
-                pwd = getcwd(args[1], BUFFERSIZE);
+                tempPwd = getcwd(buff, BUFFERSIZE);
+                memcpy(pwd, tempPwd, strlen(tempPwd) + 1);
+                free(args[1]); 
                 free(args[0]);
             } else if (strcmp(args[1], ".") == 0) {  //Works
                 chdir(".");
@@ -88,13 +94,15 @@ int sh(int argc, char **argv, char **envp) {
                 free(args[0]);
             } else if (strcmp(args[1], "..") == 0) {  //Works
                 chdir("..");
-                free(pwd);
-                pwd = getcwd(args[1], 2 * BUFFERSIZE);
+                tempPwd = getcwd(buff, BUFFERSIZE);
+                memcpy(pwd, tempPwd, strlen(tempPwd) + 1);
+                free(args[1]);
                 free(args[0]);
             } else if (chdir(args[1]) == 0) {  //Works
-                free(pwd);
-                pwd = getcwd(*args, 2 * BUFFERSIZE);
+                tempPwd = getcwd(buff, BUFFERSIZE);
+                memcpy(pwd, tempPwd, strlen(tempPwd) + 1);
                 free(args[1]);
+                free(args[0]);
             } else {
                 printf("\nNo such directory exists\n");
                 free(args[1]);
@@ -110,10 +118,11 @@ int sh(int argc, char **argv, char **envp) {
                 free(args);
             } else {
                 char *tempPwd = pwd;
+                char buff[BUFFERSIZE] = "";
                 if (chdir(args[1]) == 0) {
-                    tempPwd = getcwd(args[1], 2 * BUFFERSIZE);
+                    tempPwd = getcwd(buff, 2 * BUFFERSIZE);
                     list(tempPwd);
-                    free(tempPwd);
+                    free(args[1]);
                 } else {
                     printf("No such directory exists");
                     free(args[1]);
@@ -177,12 +186,12 @@ int sh(int argc, char **argv, char **envp) {
 	else if (strcmp(args[0], "prompt") == 0) {
 	  if (argsct == 2) {
 	    memcpy(prompt, args[1], strlen(args[1]) + 1);
-	    free(args[1]);
-	    // free(prompt);
-	  } else {
+	    free(args[1]);       
+	  } 
+      
+      else {
 	    char temp[BUFFERSIZE] = "";
 	    printf("Input prompt prefix: ");
-	    // scanf("%s", prompt);
 	    readInput(temp);
 	    memcpy(prompt, temp, strlen(temp) + 1);
 	    free(args[1]);
