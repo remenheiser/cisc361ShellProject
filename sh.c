@@ -180,10 +180,12 @@ int sh(int argc, char **argv, char **envp) {
 	    free(args[1]);
 	    // free(prompt);
 	  } else {
+	    char temp[BUFFERSIZE] = "";
 	    printf("Input prompt prefix: ");
-	    scanf("%s", prompt);
-	    readInput(prompt);
-	    // free(prompt);
+	    // scanf("%s", prompt);
+	    readInput(temp);
+	    memcpy(prompt, temp, strlen(temp) + 1);
+	    free(args[1]);
 	  }
 	  free(args[0]);
 	  free(args);
