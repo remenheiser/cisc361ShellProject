@@ -41,7 +41,8 @@ int sh(int argc, char **argv, char **envp) {
     printf("\nWelcome to the remenheiser shell!!!\n");
     while (go) {  //ALL TODO
         /* print your prompt */
-        printf("\n[%s] > ", pwd);
+
+      printf("%s[%s] > ",prompt ,pwd);
         /* get command line and process */
         readInput(commandline);
         args = stringToArray(commandline, argv, &argsct);
@@ -75,7 +76,7 @@ int sh(int argc, char **argv, char **envp) {
                 free(pwd);
                 // pwd = getcwd(args[1], BUFFERSIZE);
                 // free(args[0]);
-                pwd = getcwd(*args, BUFFERSIZE);
+                pwd = getcwd(args[1], BUFFERSIZE);
             } else if (strcmp(args[1], "/") == 0) {  //Works
                 chdir("/");
                 free(pwd);
@@ -123,7 +124,7 @@ int sh(int argc, char **argv, char **envp) {
         }
         //----------PID----------------------------------------------------------------------------------
         else if (strcmp(args[0], "pid") == 0) {
-            printf("\nPID of remenheiser shell: %ld", (long)getpid());
+            printf("PID of remenheiser shell: %ld\n", (long)getpid());
             free(args[0]);
             free(args);
         }
@@ -172,7 +173,23 @@ int sh(int argc, char **argv, char **envp) {
                 free(args);
             }
         }
-        
+	//---------PROMPT--------------------------------------------------------------------------------
+	else if (strcmp(args[0], "prompt") == 0) {
+	  if (argsct == 2) {
+	    memcpy(prompt, args[1], strlen(args[1]) + 1);
+	    free(args[1]);
+	    // free(prompt);
+	  } else {
+	    printf("Input prompt prefix: ");
+	    scanf("%s", prompt);
+	    readInput(prompt);
+	    // free(prompt);
+	  }
+	  free(args[0]);
+	  free(args);
+	}
+	 
+	
         //check for built in commands like exit, use extra if elses
         else {
             char *absPath = where(args[0], pathlist);
@@ -269,7 +286,6 @@ char *where(char *command, struct pathelement *pathlist) {
             sprintf(command, "%s/gcc", pathlist->element);
         }
         if (access(command, F_OK) == 0) {
-            //printf("%s", pathlist->element);
             printf("[%s]\n", command);
         }
         pathlist = pathlist->next;
@@ -292,5 +308,6 @@ void list(char *dir) {
             printf("\n%s", direntp->d_name);
         }
         closedir(directory);
+        printf("\n");
     }
 } /* list() */
