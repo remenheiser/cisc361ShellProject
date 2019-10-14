@@ -68,6 +68,7 @@ int sh(int argc, char **argv, char **envp) {
         }
         //-----------PWD----------------------------------------------------------------------------------
         else if (strcmp(args[0], "pwd") == 0) {  // Print working directory
+            printf("Executing Built-In command: [pwd]\n");
             printf("[%s]\n", pwd);
             free(args[0]);
             free(args);
@@ -76,6 +77,7 @@ int sh(int argc, char **argv, char **envp) {
         else if (strcmp(args[0], "cd") == 0) {
             char buff[BUFFERSIZE] = "";
             char *tempPwd = pwd;
+            printf("Executing Built-In command: [cd]\n");
             //break into cases based on args[1]
             if (argsct == 1) {
                 chdir("/usa");
@@ -112,6 +114,7 @@ int sh(int argc, char **argv, char **envp) {
         }
         //-----------LS----------------------------------------------------------------------------------
         else if (strcmp(args[0], "list") == 0) {  //Almost works
+            printf("Executing Built-In command: [list]\n");
             if (argsct == 1) {
                 list(pwd);
                 free(args[0]);
@@ -133,6 +136,7 @@ int sh(int argc, char **argv, char **envp) {
         }
         //----------PID----------------------------------------------------------------------------------
         else if (strcmp(args[0], "pid") == 0) {
+            printf("Executing Built-In command: [pid]\n");
             printf("PID of remenheiser shell: %ld\n", (long)getpid());
             free(args[0]);
             free(args);
@@ -165,6 +169,7 @@ int sh(int argc, char **argv, char **envp) {
         }
         //----------KILL----------------------------------------------------------------------------------
         else if (strcmp(args[0], "kill") == 0) {
+            printf("Executing Built-In command: [kill]\n");
             if (argsct == 1) {
                 free(args[0]);
                 free(args);
@@ -184,12 +189,11 @@ int sh(int argc, char **argv, char **envp) {
         }
 	//---------PROMPT--------------------------------------------------------------------------------
 	else if (strcmp(args[0], "prompt") == 0) {
+        printf("Executing Built-In command: [prompt]\n");
 	  if (argsct == 2) {
 	    memcpy(prompt, args[1], strlen(args[1]) + 1);
 	    free(args[1]);       
-	  } 
-      
-      else {
+	  } else {
 	    char temp[BUFFERSIZE] = "";
 	    printf("Input prompt prefix: ");
 	    readInput(temp);
@@ -199,7 +203,7 @@ int sh(int argc, char **argv, char **envp) {
 	  free(args[0]);
 	  free(args);
 	}
-	 
+	//--------RUN-PROGRAMS-------------------------------------------------------------------------- 
 	
         //check for built in commands like exit, use extra if elses
         else {
@@ -207,14 +211,14 @@ int sh(int argc, char **argv, char **envp) {
             if (absPath == NULL) {
                 printf("Command not found: %s\n", args[0]);
             } else {
-                int pid = fork();
+                pid_t pid = fork();
                 if (pid == 0) {  //child process
                     /*  else  program to exec */
                     execve(absPath, args, envp);
-                    printf("ERROR");  //Code should never reach here! If it does there is a problem!
+                    printf("ERROR\n");  //Code should never reach here! If it does there is a problem!
                     exit(0);
                 } else {  //parent process
-                    pid = waitpid(pid, NULL, 0);
+                    waitpid(pid, NULL, 0);
                 }
             }
         }
@@ -277,9 +281,11 @@ char **stringToArray(char *input, char **argv, int *argsCount) {
 
 char *which(char *command, struct pathelement *pathlist) {                                         
     printf("Executing Built-In command: [which]\n");
+    char* cmd = malloc(1024 * sizeof(char *));
+    strcpy(cmd, command);
     while (pathlist) {  
         if (command != NULL) {
-            sprintf(command, "%s/gcc", pathlist->element);
+            sprintf(cmd, "%s/%s", pathlist->element, command);
         }
         if (access(command, X_OK) == 0) {
             printf("[%s]\n", command);
@@ -287,20 +293,28 @@ char *which(char *command, struct pathelement *pathlist) {
         }
         pathlist = pathlist->next;
     }
+    free(cmd);
     return NULL;
 } /* which() */
 
 char *where(char *command, struct pathelement *pathlist) {  
     printf("Executing Built-In command: [where]\n");
+    char* cmd = malloc(1024 * sizeof(char *));
+    strcpy(cmd, command);
     while (pathlist) {  // WHERE
         if (command != NULL) {
-            sprintf(command, "%s/gcc", pathlist->element);
+           sprintf(cmd, "%s/%s", pathlist->element, command);
         }
-        if (access(command, F_OK) == 0) {
-            printf("[%s]\n", command);
+        if (access(cmd, F_OK) == 0) {
+            //printf("[%s]\n", command);
+            char* temp = cmd;
+            free(cmd);
+            return temp; 
+            
         }
         pathlist = pathlist->next;
     }
+    free(cmd);
     return NULL;
 } /* where() */
 
