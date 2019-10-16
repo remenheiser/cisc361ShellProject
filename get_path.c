@@ -41,6 +41,6 @@ struct pathelement *get_path()
     tmp->next = NULL;
   } while ( p = strtok(NULL, ":") );
 
-  free(path);
+  //free(path); //When I comment out this line, it goes from 486 errors about invalid reads of size 1 when using where, to 1 error about a memory leak.
   return pathlist;
 } /* end get_path() */

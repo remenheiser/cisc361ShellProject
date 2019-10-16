@@ -40,17 +40,17 @@ int sh(int argc, char **argv, char **envp) {
 
     printf("\nWelcome to the remenheiser shell!!!\n");
     while (go) {  //ALL TODO
-        /* print your prompt */
+                  /* print your prompt */
 
-      printf("%s[%s] > ",prompt ,pwd);
+        printf("%s[%s] > ", prompt, pwd);
         /* get command line and process */
         readInput(commandline);
-	if (commandline == NULL) {
-	  continue;
-	  printf("\n");
-	}
+        if (commandline == NULL) {
+            continue;
+            printf("\n");
+        }
         args = stringToArray(commandline, argv, &argsct);
-      
+
         //-----------RETURN-------------------------------------------------------------------------------
         if (args[0] == '\0') {
             //Do Nothing
@@ -88,7 +88,7 @@ int sh(int argc, char **argv, char **envp) {
                 chdir("/");
                 tempPwd = getcwd(buff, BUFFERSIZE);
                 memcpy(pwd, tempPwd, strlen(tempPwd) + 1);
-                free(args[1]); 
+                free(args[1]);
                 free(args[0]);
             } else if (strcmp(args[1], ".") == 0) {  //Works
                 chdir(".");
@@ -144,7 +144,7 @@ int sh(int argc, char **argv, char **envp) {
         //----------WHERE--------------------------------------------------------------------------------
         else if (strcmp(args[0], "where") == 0) {  //does not work yet
             if (argsct == 1) {
-                where(NULL, pathlist);
+                where("", pathlist);
                 free(args[0]);
                 free(args);
             } else {
@@ -157,7 +157,7 @@ int sh(int argc, char **argv, char **envp) {
         //----------WHICH--------------------------------------------------------------------------------
         else if (strcmp(args[0], "which") == 0) {  //does not work yet
             if (argsct == 1) {
-                which(NULL, pathlist);
+                which("", pathlist);
                 free(args[0]);
                 free(args);
             } else {
@@ -180,34 +180,38 @@ int sh(int argc, char **argv, char **envp) {
                 free(prompt);
                 kill(pid, SIGTERM);
             } else {
-                pid_t temp = (long) args[1];
+                pid_t temp = (long)args[1];
                 kill(temp, SIGTERM);
                 free(args[1]);
                 free(args[0]);
                 free(args);
             }
         }
-	//---------PROMPT--------------------------------------------------------------------------------
-	else if (strcmp(args[0], "prompt") == 0) {
-        printf("Executing Built-In command: [prompt]\n");
-	  if (argsct == 2) {
-	    memcpy(prompt, args[1], strlen(args[1]) + 1);
-	    free(args[1]);       
-	  } else {
-	    char temp[BUFFERSIZE] = "";
-	    printf("Input prompt prefix: ");
-	    readInput(temp);
-	    memcpy(prompt, temp, strlen(temp) + 1);
-	    free(args[1]);
-	  }
-	  free(args[0]);
-	  free(args);
-	}
-	//--------RUN-PROGRAMS-------------------------------------------------------------------------- 
-	
+        //---------PROMPT--------------------------------------------------------------------------------
+        else if (strcmp(args[0], "prompt") == 0) {
+            printf("Executing Built-In command: [prompt]\n");
+            if (argsct == 2) {
+                memcpy(prompt, args[1], strlen(args[1]) + 1);
+                free(args[1]);
+            } else {
+                char temp[BUFFERSIZE] = "";
+                printf("Input prompt prefix: ");
+                readInput(temp);
+                memcpy(prompt, temp, strlen(temp) + 1);
+                free(args[1]);
+            }
+            free(args[0]);
+            free(args);
+        }
+        //--------RUN-PROGRAMS--------------------------------------------------------------------------
+
         //check for built in commands like exit, use extra if elses
         else {
             char *absPath = where(args[0], pathlist);
+            for (int i = 0; i < argsct; i++) {
+                free(args[i]);
+            }
+            printf("ARGS COUNT: %d\n ", argsct);
             if (absPath == NULL) {
                 printf("Command not found: %s\n", args[0]);
             } else {
@@ -221,6 +225,7 @@ int sh(int argc, char **argv, char **envp) {
                     waitpid(pid, NULL, 0);
                 }
             }
+            free(args);
         }
     }
     freeList(pathlist);
@@ -231,7 +236,7 @@ int sh(int argc, char **argv, char **envp) {
 
 void freeList(struct pathelement *pathlist) {
     struct pathelement *head;
-
+    free(pathlist->element);
     while (pathlist != NULL) {
         head = pathlist;
         pathlist = pathlist->next;
@@ -279,46 +284,47 @@ char **stringToArray(char *input, char **argv, int *argsCount) {
     return argv;
 }
 
-char *which(char *command, struct pathelement *pathlist) {                                         
+char *which(char *command, struct pathelement *pathlist) {
     printf("Executing Built-In command: [which]\n");
-    char* cmd = malloc(1024 * sizeof(char *));
+    char *cmd = malloc(1024 * sizeof(char *));
+    struct pathelement *tempPath = pathlist;
     strcpy(cmd, command);
-    while (pathlist) {  
+    while (pathlist) {  // WHICH, doing the same as where here for now
         if (command != NULL) {
-            sprintf(cmd, "%s/%s", pathlist->element, command);
+            sprintf(cmd, "%s/%s", tempPath->element, command);
+            if (access(cmd, F_OK) == 0) {
+                printf("%s\n", cmd);
+                char *temp = cmd;
+                free(cmd);
+                return temp;
+            }
         }
-        if (access(command, X_OK) == 0) {
-            printf("[%s]\n", command);
-            break;
-        }
-        pathlist = pathlist->next;
+        tempPath = tempPath->next;
     }
-    free(cmd);
     return NULL;
 } /* which() */
 
-char *where(char *command, struct pathelement *pathlist) {  
+char *where(char *command, struct pathelement *pathlist) {
     printf("Executing Built-In command: [where]\n");
-    char* cmd = malloc(1024 * sizeof(char *));
+    char *cmd = malloc(1024 * sizeof(char *));
+    struct pathelement *tempPath = pathlist;
     strcpy(cmd, command);
     while (pathlist) {  // WHERE
         if (command != NULL) {
-           sprintf(cmd, "%s/%s", pathlist->element, command);
+            sprintf(cmd, "%s/%s", tempPath->element, command);
+            if (access(cmd, F_OK) == 0) {
+                printf("%s\n", cmd);
+                char *temp = cmd;
+                free(cmd);
+                return temp;
+            }
         }
-        if (access(cmd, F_OK) == 0) {
-            //printf("[%s]\n", command);
-            char* temp = cmd;
-            free(cmd);
-            return temp; 
-            
-        }
-        pathlist = pathlist->next;
+        tempPath = tempPath->next;
     }
-    free(cmd);
     return NULL;
 } /* where() */
 
-void list(char *dir) { 
+void list(char *dir) {
     DIR *directory = opendir(dir);
     struct dirent *direntp;
 
