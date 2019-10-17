@@ -25,7 +25,6 @@ int sh(int argc, char **argv, char **envp) {
     password_entry = getpwuid(uid);   /* get passwd info */
     homedir = password_entry->pw_dir; /* Home directory to start
 						  out with*/
-
     if ((pwd = getcwd(NULL, PATH_MAX + 1)) == NULL) {
         perror("getcwd");
         exit(2);
@@ -41,14 +40,14 @@ int sh(int argc, char **argv, char **envp) {
     printf("\nWelcome to the remenheiser shell!!!\n");
     while (go) {  //ALL TODO
                   /* print your prompt */
-
         printf("%s[%s] > ", prompt, pwd);
         /* get command line and process */
         readInput(commandline);
         if (commandline == NULL) {
             continue;
             printf("\n");
-        }
+        } 
+    
         args = stringToArray(commandline, argv, &argsct);
 
         //-----------RETURN-------------------------------------------------------------------------------
@@ -64,6 +63,9 @@ int sh(int argc, char **argv, char **envp) {
             free(args);
             free(owd);
             free(pwd);
+            freeList(pathlist);
+            free(commandline);
+            free(prompt);
             /* check for each built in command and implement */
         }
         //-----------PWD----------------------------------------------------------------------------------
@@ -143,29 +145,21 @@ int sh(int argc, char **argv, char **envp) {
         }
         //----------WHERE--------------------------------------------------------------------------------
         else if (strcmp(args[0], "where") == 0) {  //does not work yet
-            if (argsct == 1) {
-                where("", pathlist);
-                free(args[0]);
-                free(args);
-            } else {
+            if (argsct == 2) {
                 where(args[1], pathlist);
                 free(args[1]);
-                free(args[0]);
-                free(args);
             }
+            free(args[0]);
+            free(args);
         }
         //----------WHICH--------------------------------------------------------------------------------
         else if (strcmp(args[0], "which") == 0) {  //does not work yet
-            if (argsct == 1) {
-                which("", pathlist);
-                free(args[0]);
-                free(args);
-            } else {
+            if (argsct == 2) {
                 which(args[1], pathlist);
                 free(args[1]);
-                free(args[0]);
-                free(args);
             }
+            free(args[0]);
+            free(args);
         }
         //----------KILL----------------------------------------------------------------------------------
         else if (strcmp(args[0], "kill") == 0) {
@@ -208,10 +202,10 @@ int sh(int argc, char **argv, char **envp) {
         //check for built in commands like exit, use extra if elses
         else {
             char *absPath = where(args[0], pathlist);
-            for (int i = 0; i < argsct; i++) {
-                free(args[i]);
-            }
-            printf("ARGS COUNT: %d\n ", argsct);
+            // for (int i = 0; i < argsct; i++) {
+            //     free(args[i]);
+            // }
+            //printf("ARGS COUNT: %d\n ", argsct);
             if (absPath == NULL) {
                 printf("Command not found: %s\n", args[0]);
             } else {
@@ -225,14 +219,22 @@ int sh(int argc, char **argv, char **envp) {
                     waitpid(pid, NULL, 0);
                 }
             }
+            for (int i = 0; i < argsct; i++) {
+                free(args[i]);
+            }
             free(args);
         }
     }
-    freeList(pathlist);
-    free(commandline);
-    free(prompt);
+    // freeList(pathlist);
+    // free(commandline);
+    // free(prompt);
     return 0;
 } /* sh() */
+
+// void intHandler(int sig) {
+//     signal(sig, SIGINT);
+
+// }
 
 void freeList(struct pathelement *pathlist) {
     struct pathelement *head;
@@ -297,9 +299,12 @@ char *which(char *command, struct pathelement *pathlist) {
                 char *temp = cmd;
                 free(cmd);
                 return temp;
+            } else if(access(cmd, F_OK) != 0 && tempPath->next == NULL) {
+                free(cmd);
+                break;
             }
-        }
-        tempPath = tempPath->next;
+            tempPath = tempPath->next;
+        } 
     }
     return NULL;
 } /* which() */
@@ -317,9 +322,12 @@ char *where(char *command, struct pathelement *pathlist) {
                 char *temp = cmd;
                 free(cmd);
                 return temp;
+            } else if(access(cmd, F_OK) != 0 && tempPath->next == NULL) {
+                free(cmd);
+                break;
             }
+             tempPath = tempPath->next;
         }
-        tempPath = tempPath->next;
     }
     return NULL;
 } /* where() */
