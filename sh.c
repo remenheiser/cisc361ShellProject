@@ -43,11 +43,11 @@ int sh(int argc, char **argv, char **envp) {
         printf("%s[%s] > ", prompt, pwd);
         /* get command line and process */
         readInput(commandline);
-        if (commandline == NULL) {
-            continue;
-            printf("\n");
-        } 
-    
+        // if (commandline == NULL) {
+        //     continue;
+        //     printf("\n");
+        // } 
+
         args = stringToArray(commandline, argv, &argsct);
 
         //-----------RETURN-------------------------------------------------------------------------------
@@ -202,10 +202,6 @@ int sh(int argc, char **argv, char **envp) {
         //check for built in commands like exit, use extra if elses
         else {
             char *absPath = where(args[0], pathlist);
-            // for (int i = 0; i < argsct; i++) {
-            //     free(args[i]);
-            // }
-            //printf("ARGS COUNT: %d\n ", argsct);
             if (absPath == NULL) {
                 printf("Command not found: %s\n", args[0]);
             } else {
@@ -225,16 +221,8 @@ int sh(int argc, char **argv, char **envp) {
             free(args);
         }
     }
-    // freeList(pathlist);
-    // free(commandline);
-    // free(prompt);
     return 0;
 } /* sh() */
-
-// void intHandler(int sig) {
-//     signal(sig, SIGINT);
-
-// }
 
 void freeList(struct pathelement *pathlist) {
     struct pathelement *head;

@@ -6,16 +6,18 @@ void sig_handler(int signal);
 
 int main( int argc, char **argv, char **envp )
 {
-  /*TODO put signal set up stuff here */
-  int result = sh(argc, argv, envp);
-  //  for (int i = 0; i < sizeof(argv); i+=8) {
-  //  free(argv[i]);
-  // }
-  return result;
+  signal(SIGINT, sig_handler);
+  signal(SIGTERM, sig_handler);
+  signal(SIGTSTP, sig_handler);
+  // int result = sh(argc, argv, envp);
+  return sh(argc, argv, envp);
 }
 
 void sig_handler(int signal)
 {
   /*TODO define your signal handler */
+  if (signal == SIGINT || signal == SIGTERM || signal == SIGTSTP) {
+    return;
+  }
 }
 
