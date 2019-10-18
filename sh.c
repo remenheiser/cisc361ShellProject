@@ -222,8 +222,10 @@ int sh(int argc, char **argv, char **envp) {
                 while (*envp) {
                     printf("%s\n", *envp++);
                 }
-            } //TODO the rest of setenv
-        }
+            } else if (argsct == 2) {
+	      
+	    }
+	}
         //--------RUN-PROGRAMS--------------------------------------------------------------------------
 
         //check for built in commands like exit, use extra if elses
@@ -243,6 +245,7 @@ int sh(int argc, char **argv, char **envp) {
                     waitpid(pid, NULL, 0);
                 }
             }
+            free(absPath);
             for (int i = 0; i < argsct; i++) {
                 free(args[i]);
             }
@@ -312,11 +315,8 @@ char *which(char *command, struct pathelement *pathlist) {
             sprintf(cmd, "%s/%s", tempPath->element, command);
             if (access(cmd, F_OK) == 0) {
                 printf("%s\n", cmd);
-                char *temp = cmd;
-                free(cmd);
-                return temp;
+                return cmd;
             } else if (access(cmd, F_OK) != 0 && tempPath->next == NULL) {
-                free(cmd);
                 break;
             }
             tempPath = tempPath->next;
@@ -335,17 +335,13 @@ char *where(char *command, struct pathelement *pathlist) {
             sprintf(cmd, "%s/%s", tempPath->element, command);
             if (access(cmd, F_OK) == 0) {
                 printf("%s\n", cmd);
-                char *temp = cmd;
-                free(cmd);
-                return temp;
+                return cmd;
             } else if (access(cmd, F_OK) != 0 && tempPath->next == NULL) {
-                free(cmd);
                 break;
             }
             tempPath = tempPath->next;
         }
     }
-    //    free(cmd);
     return NULL;
 } /* where() */
 
