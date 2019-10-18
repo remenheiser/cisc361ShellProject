@@ -10,6 +10,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <glob.h>
 
 int sh(int argc, char **argv, char **envp) {
     char *prompt = calloc(PROMPTMAX, sizeof(char));
@@ -66,7 +67,6 @@ int sh(int argc, char **argv, char **envp) {
             freeList(pathlist);
             free(commandline);
             free(prompt);
-            /* check for each built in command and implement */
         }
         //-----------PWD----------------------------------------------------------------------------------
         else if (strcmp(args[0], "pwd") == 0) {  // Print working directory
@@ -114,7 +114,7 @@ int sh(int argc, char **argv, char **envp) {
             }
             free(args);
         }
-        //-----------LS----------------------------------------------------------------------------------
+        //-----------LIST--------------------------------------------------------------------------------
         else if (strcmp(args[0], "list") == 0) {  //Almost works
             printf("Executing Built-In command: [list]\n");
             if (argsct == 1) {
@@ -146,7 +146,8 @@ int sh(int argc, char **argv, char **envp) {
         //----------WHERE--------------------------------------------------------------------------------
         else if (strcmp(args[0], "where") == 0) {  //works
             if (argsct == 2) {
-                where(args[1], pathlist);
+                char *result = where(args[1], pathlist);
+                free(result);
                 free(args[1]);
             }
             free(args[0]);
@@ -155,7 +156,8 @@ int sh(int argc, char **argv, char **envp) {
         //----------WHICH--------------------------------------------------------------------------------
         else if (strcmp(args[0], "which") == 0) {  //works
             if (argsct == 2) {
-                which(args[1], pathlist);
+                char *result = which(args[1], pathlist);
+                free(result);
                 free(args[1]);
             }
             free(args[0]);
@@ -227,11 +229,11 @@ int sh(int argc, char **argv, char **envp) {
 	    }
 	}
         //--------RUN-PROGRAMS--------------------------------------------------------------------------
-
-        //check for built in commands like exit, use extra if elses
         else {
+            glob_t globber;
             char *absPath = where(args[0], pathlist);
             printf("Executing user entered command: [%s]\n ", args[0]);
+            printf("COUNT: %d\n", argsct);
             if (absPath == NULL) {
                 printf("Command not found: %s\n", args[0]);
             } else {
@@ -317,6 +319,7 @@ char *which(char *command, struct pathelement *pathlist) {
                 printf("%s\n", cmd);
                 return cmd;
             } else if (access(cmd, F_OK) != 0 && tempPath->next == NULL) {
+                free(cmd);
                 break;
             }
             tempPath = tempPath->next;
@@ -337,6 +340,7 @@ char *where(char *command, struct pathelement *pathlist) {
                 printf("%s\n", cmd);
                 return cmd;
             } else if (access(cmd, F_OK) != 0 && tempPath->next == NULL) {
+                free(cmd);
                 break;
             }
             tempPath = tempPath->next;
