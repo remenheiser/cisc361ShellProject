@@ -9,14 +9,14 @@ int main( int argc, char **argv, char **envp )
   signal(SIGINT, sig_handler);
   signal(SIGTERM, sig_handler);
   signal(SIGTSTP, sig_handler);
-  // int result = sh(argc, argv, envp);
+  signal(EOF, sig_handler);
   return sh(argc, argv, envp);
 }
 
 void sig_handler(int signal)
 {
   /*TODO define your signal handler */
-  if (signal == SIGINT || signal == SIGTERM || signal == SIGTSTP) {
+  if (signal == SIGINT || signal == SIGTERM || signal == SIGTSTP || signal == EOF) {
     return;
   }
 }

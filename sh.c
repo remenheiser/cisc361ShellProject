@@ -38,15 +38,15 @@ int sh(int argc, char **argv, char **envp) {
     pathlist = get_path();
 
     printf("\nWelcome to the remenheiser shell!!!\n");
-    while (go) {  
+    while (go) {
         printf("%s[%s] > ", prompt, pwd);
         /* get command line and process */
         readInput(commandline);
         if (commandline == "\0") {
             //Do nothing
             printf("\n");
-	        continue;
-	    } 
+            continue;
+        }
 
         args = stringToArray(commandline, argv, &argsct);
 
@@ -173,7 +173,7 @@ int sh(int argc, char **argv, char **envp) {
                 free(commandline);
                 free(prompt);
                 kill(pid, SIGTERM);
-            } else { //need to fix
+            } else {  //need to fix
                 pid_t temp = (long)args[1];
                 kill(temp, SIGTERM);
                 free(args[1]);
@@ -183,7 +183,7 @@ int sh(int argc, char **argv, char **envp) {
         }
         //---------PROMPT--------------------------------------------------------------------------------
         else if (strcmp(args[0], "prompt") == 0) {
-    	    printf("Executing Built-In command: [prompt]\n");
+            printf("Executing Built-In command: [prompt]\n");
             if (argsct == 2) {
                 memcpy(prompt, args[1], strlen(args[1]) + 1);
                 free(args[1]);
@@ -201,11 +201,11 @@ int sh(int argc, char **argv, char **envp) {
         else if (strcmp(args[0], "printenv") == 0) {
             printf("Executing Built-In command: [printenv]\n");
             if (argsct == 1) {
-                while(*envp) {
-                    printf("%s\n", *envp++); 
+                while (*envp) {
+                    printf("%s\n", *envp++);
                 }
             } else if (argsct == 2 && getenv(args[1]) != NULL) {
-                char* result = getenv(args[1]);
+                char *result = getenv(args[1]);
                 free(args[1]);
                 printf("%s\n", result);
             } else {
@@ -215,11 +215,21 @@ int sh(int argc, char **argv, char **envp) {
             free(args[0]);
             free(args);
         }
+        //--------SETENV--------------------------------------------------------------------------------
+        else if (strcmp(args[0], "setenv") == 0) {
+            printf("Executing Built-In command: [setenv]\n");
+            if (argsct == 1) {
+                while (*envp) {
+                    printf("%s\n", *envp++);
+                }
+            } //TODO the rest of setenv
+        }
         //--------RUN-PROGRAMS--------------------------------------------------------------------------
 
         //check for built in commands like exit, use extra if elses
         else {
             char *absPath = where(args[0], pathlist);
+            printf("Executing user entered command: [%s]\n ", args[0]);
             if (absPath == NULL) {
                 printf("Command not found: %s\n", args[0]);
             } else {
@@ -305,12 +315,12 @@ char *which(char *command, struct pathelement *pathlist) {
                 char *temp = cmd;
                 free(cmd);
                 return temp;
-            } else if(access(cmd, F_OK) != 0 && tempPath->next == NULL) {
+            } else if (access(cmd, F_OK) != 0 && tempPath->next == NULL) {
                 free(cmd);
                 break;
             }
             tempPath = tempPath->next;
-        } 
+        }
     }
     return NULL;
 } /* which() */
@@ -328,11 +338,11 @@ char *where(char *command, struct pathelement *pathlist) {
                 char *temp = cmd;
                 free(cmd);
                 return temp;
-            } else if(access(cmd, F_OK) != 0 && tempPath->next == NULL) {
+            } else if (access(cmd, F_OK) != 0 && tempPath->next == NULL) {
                 free(cmd);
                 break;
             }
-             tempPath = tempPath->next;
+            tempPath = tempPath->next;
         }
     }
     //    free(cmd);
