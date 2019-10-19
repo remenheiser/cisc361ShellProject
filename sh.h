@@ -16,3 +16,4 @@ void intHandler(int);
 #define PROMPTMAX 32
 #define MAXARGS 10
 #define BUFFERSIZE 128
+// #define GLOB_NOCHECK (1 << 4)

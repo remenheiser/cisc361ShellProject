@@ -10,7 +10,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <glob.h>
+#include <wordexp.h>
 
 int sh(int argc, char **argv, char **envp) {
     char *prompt = calloc(PROMPTMAX, sizeof(char));
@@ -52,7 +52,7 @@ int sh(int argc, char **argv, char **envp) {
         args = stringToArray(commandline, argv, &argsct);
 
         //-----------RETURN-------------------------------------------------------------------------------
-        if (args[0] == '\0') {
+        if (args[0][0] == '\0') {
             //Do Nothing
             free(args);
         }
@@ -230,8 +230,27 @@ int sh(int argc, char **argv, char **envp) {
 	}
         //--------RUN-PROGRAMS--------------------------------------------------------------------------
         else {
-            glob_t globber;
             char *absPath = where(args[0], pathlist);
+            // wordexp_t result;
+            // int status = 0;
+            // int j = 0;
+
+            // switch (wordexp (absPath, &result, 0)) {
+            //     case 0:			/* Successful.  */
+            //         break;
+            //     case WRDE_NOSPACE:
+            //     /* If the error was WRDE_NOSPACE,
+            //         then perhaps part of the result was allocated.  */
+            //         wordfree (&result);
+            //     default:                    /* Some other error.  */
+            //         return -1;
+            //     }
+            // for (i = 0; args[i]; i++) {
+            //     if (wordexp (*args, &result, WRDE_APPEND)) {
+            //         wordfree (&result);
+            //         return -1;
+            //     }
+            // }
             printf("Executing user entered command: [%s]\n ", args[0]);
             printf("COUNT: %d\n", argsct);
             if (absPath == NULL) {
@@ -241,12 +260,14 @@ int sh(int argc, char **argv, char **envp) {
                 if (pid == 0) {  //child process
                     /*  else  program to exec */
                     execve(absPath, args, envp);
+                   // execve(result.we_wordv[0], result.we_wordv, envp);
                     printf("ERROR\n");  //Code should never reach here! If it does there is a problem!
                     exit(0);
                 } else {  //parent process
                     waitpid(pid, NULL, 0);
                 }
             }
+           // wordfree(&result);
             free(absPath);
             for (int i = 0; i < argsct; i++) {
                 free(args[i]);
@@ -289,8 +310,8 @@ char **stringToArray(char *input, char **argv, int *argsCount) {
     while (strtok(NULL, " ")) {
         count++;
     }
-    argv = malloc((count + 1) * sizeof(char *));
-    argv[count] = NULL;
+    argv = malloc((count + 2) * sizeof(char *));
+    argv[count+1] = NULL;
 
     count = 0;
     strcpy(buff, input);
@@ -298,7 +319,7 @@ char **stringToArray(char *input, char **argv, int *argsCount) {
 
     while (t) {
         int len = strlen(t);
-        argv[count] = (char *)malloc((len + 1) * sizeof(char *));
+        argv[count] = malloc((len + 1) * sizeof(char));
         strcpy(argv[count], t);
         count++;
         *argsCount = count;
