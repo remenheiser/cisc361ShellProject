@@ -52,7 +52,7 @@ int sh(int argc, char **argv, char **envp) {
         args = stringToArray(commandline, argv, &argsct);
 
         //-----------RETURN-------------------------------------------------------------------------------
-        if (args[0][0] == '\0') {
+        if (commandline[0] == '\0') {
             //Do Nothing
             free(args);
         }
@@ -191,7 +191,8 @@ int sh(int argc, char **argv, char **envp) {
                     kill(shellPid, SIGTERM);
                 }
             } else {
-                kill(atoi(args[1]), SIGTERM);
+                pid_t tempPid = atoi(args[1]);
+                kill(tempPid, SIGTERM);
                 free(args[1]);
                 free(args[0]);
                 free(args);
