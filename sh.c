@@ -167,6 +167,7 @@ int sh(int argc, char **argv, char **envp) {
         else if (strcmp(args[0], "kill") == 0) {
             printf("Executing Built-In command: [kill]\n");
             if (argsct == 1) {
+                go = 0;
                 free(args[0]);
                 free(args);
                 free(pwd);
@@ -175,9 +176,22 @@ int sh(int argc, char **argv, char **envp) {
                 free(commandline);
                 free(prompt);
                 kill(pid, SIGTERM);
-            } else {  //need to fix
-                pid_t temp = (long)args[1];
-                kill(temp, SIGTERM);
+            } else if (argsct == 2) {  
+                int shellPid = getpid();
+                if (atoi(args[1]) == shellPid) {
+                    go = 0;
+                    free(args[1]);
+                    free(args[0]);
+                    free(args);
+                    free(pwd);
+                    freeList(pathlist);
+                    free(owd);
+                    free(commandline);
+                    free(prompt);
+                    kill(shellPid, SIGTERM);
+                }
+            } else {
+                kill(atoi(args[1]), SIGTERM);
                 free(args[1]);
                 free(args[0]);
                 free(args);
@@ -225,9 +239,9 @@ int sh(int argc, char **argv, char **envp) {
                     printf("%s\n", *envp++);
                 }
             } else if (argsct == 2) {
-	      
+                
+	        }
 	    }
-	}
         //--------RUN-PROGRAMS--------------------------------------------------------------------------
         else {
             char *absPath = where(args[0], pathlist);
@@ -252,7 +266,7 @@ int sh(int argc, char **argv, char **envp) {
             //     }
             // }
             printf("Executing user entered command: [%s]\n ", args[0]);
-            printf("COUNT: %d\n", argsct);
+            //printf("COUNT: %d\n", argsct);
             if (absPath == NULL) {
                 printf("Command not found: %s\n", args[0]);
             } else {
