@@ -11,6 +11,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <wordexp.h>
+#include <stdbool.h>
 
 int sh(int argc, char **argv, char **envp) {
     char *prompt = calloc(PROMPTMAX, sizeof(char));
@@ -166,20 +167,28 @@ int sh(int argc, char **argv, char **envp) {
         //----------KILL----------------------------------------------------------------------------------
         else if (strcmp(args[0], "kill") == 0) {
             printf("Executing Built-In command: [kill]\n");
-            if (argsct == 1) {
-                go = 0;
-                free(args[0]);
-                free(args);
-                free(pwd);
-                freeList(pathlist);
-                free(owd);
-                free(commandline);
-                free(prompt);
-                kill(pid, SIGTERM);
-            } else if (argsct == 2) {  
+            if (argsct < 2) {
+                //Do Nothing
+		free(args[1]);
+		free(args[0]);
+		free(args);
+		printf("kill: Too few arguments.\n");	
+            } else {  
                 int shellPid = getpid();
-                if (atoi(args[1]) == shellPid) {
-                    go = 0;
+		int signal = SIGTERM;
+		int startIndex = 1;
+
+		if (args[1][0] = '-') {
+		    startIndex = 2;
+		    signal = atoi(args[1]) * -1;
+		}
+		
+		for (startIndex; startIndex < argsct; startIndex++) {
+		    int tempPid = atoi(args[1]);
+		    
+		if (shellPid == tempPid) {
+		    go = 0;
+		    free(args[2]);
                     free(args[1]);
                     free(args[0]);
                     free(args);
@@ -188,15 +197,15 @@ int sh(int argc, char **argv, char **envp) {
                     free(owd);
                     free(commandline);
                     free(prompt);
-                    kill(shellPid, SIGTERM);
-                }
-            } else {
-                pid_t tempPid = atoi(args[1]);
-                kill(tempPid, SIGTERM);
+                    kill(shellPid, signal);
+		}
+                kill(tempPid, signal);
+            	}
+		free(args[2]);
                 free(args[1]);
                 free(args[0]);
                 free(args);
-            }
+	    }
         }
         //---------PROMPT--------------------------------------------------------------------------------
         else if (strcmp(args[0], "prompt") == 0) {
@@ -240,32 +249,28 @@ int sh(int argc, char **argv, char **envp) {
                     printf("%s\n", *envp++);
                 }
             } else if (argsct == 2) {
-                
-	        }
+	      setenv(args[1], "", 0);
+	    } else {
+	      setenv(args[1], args[0], 0);
 	    }
+	}
+	//--------WILDCARDS-----------------------------------------------------------------------------
+        else if (strchr(*args, '*') != NULL || (strchr(*args, '?') != NULL)) {
+	 printf("TEST: %s\n", strchr(*args, '*'));
+	  wordexp_t p;
+	  char** word;
+	  int position = 0;
+	  wordexp(*args, &p, 0);
+	  word = p.we_wordv;
+	  for (position = argsct; position < p.we_wordc; position++) {
+	    printf("%s\n", word[position]);
+	   // wordfree(&p);
+	  }
+  	   wordfree(&p);	  
+	}
         //--------RUN-PROGRAMS--------------------------------------------------------------------------
         else {
             char *absPath = where(args[0], pathlist);
-            // wordexp_t result;
-            // int status = 0;
-            // int j = 0;
-
-            // switch (wordexp (absPath, &result, 0)) {
-            //     case 0:			/* Successful.  */
-            //         break;
-            //     case WRDE_NOSPACE:
-            //     /* If the error was WRDE_NOSPACE,
-            //         then perhaps part of the result was allocated.  */
-            //         wordfree (&result);
-            //     default:                    /* Some other error.  */
-            //         return -1;
-            //     }
-            // for (i = 0; args[i]; i++) {
-            //     if (wordexp (*args, &result, WRDE_APPEND)) {
-            //         wordfree (&result);
-            //         return -1;
-            //     }
-            // }
             printf("Executing user entered command: [%s]\n ", args[0]);
             //printf("COUNT: %d\n", argsct);
             if (absPath == NULL) {
@@ -275,14 +280,12 @@ int sh(int argc, char **argv, char **envp) {
                 if (pid == 0) {  //child process
                     /*  else  program to exec */
                     execve(absPath, args, envp);
-                   // execve(result.we_wordv[0], result.we_wordv, envp);
                     printf("ERROR\n");  //Code should never reach here! If it does there is a problem!
                     exit(0);
                 } else {  //parent process
                     waitpid(pid, NULL, 0);
                 }
             }
-           // wordfree(&result);
             free(absPath);
             for (int i = 0; i < argsct; i++) {
                 free(args[i]);
