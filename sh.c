@@ -3,6 +3,7 @@
 #include <limits.h>
 #include <pwd.h>
 #include <signal.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,7 +12,6 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <wordexp.h>
-#include <stdbool.h>
 
 int sh(int argc, char **argv, char **envp) {
     char *prompt = calloc(PROMPTMAX, sizeof(char));
@@ -54,13 +54,13 @@ int sh(int argc, char **argv, char **envp) {
 
         //-----------RETURN-------------------------------------------------------------------------------
         //Catches if user presses enter
-		if (commandline[0] == '\0') {
+        if (commandline[0] == '\0') {
             //Do Nothing
             free(args);
         }
         //-----------EXIT---------------------------------------------------------------------------------
-        else if (strcmp(args[0], "exit") == 0) { //frees allocated memory
-            go = 0;  //run = false
+        else if (strcmp(args[0], "exit") == 0) {  //frees allocated memory
+            go = 0;                               //run = false
             printf("\nExiting remenheiser shell...\n");
             free(args[0]);
             free(args);
@@ -119,7 +119,7 @@ int sh(int argc, char **argv, char **envp) {
         //-----------LIST--------------------------------------------------------------------------------
         else if (strcmp(args[0], "list") == 0) {  //works
             printf("Executing Built-In command: [list]\n");
-            if (argsct == 1) { //list is only argument
+            if (argsct == 1) {  //list is only argument
                 list(pwd);
                 free(args[0]);
                 free(args);
@@ -168,50 +168,50 @@ int sh(int argc, char **argv, char **envp) {
         //----------KILL----------------------------------------------------------------------------------
         else if (strcmp(args[0], "kill") == 0) {
             printf("Executing Built-In command: [kill]\n");
-            if (argsct < 2) { //kill is either only element or kill without a signal or command following it
-                //Do Nothing
-    		    free(args[1]);
-	    	    free(args[0]);
-		        free(args);
-		        printf("kill: Too few arguments.\n");	
-            } else {  
+            if (argsct < 2) {  //kill is either only element or kill without a signal or command following it
+                               //Do Nothing
+                free(args[1]);
+                free(args[0]);
+                free(args);
+                printf("kill: Too few arguments.\n");
+            } else {
                 int shellPid = getpid();
-		        int signal = SIGTERM;
-		        int startIndex = 1;
+                int signal = SIGTERM;
+                int startIndex = 1;
 
-		        if (args[1][0] == '-') {
-	 		        startIndex = 2;
-	    		    signal = atoi(args[1]) * -1;
-		        }   
-		
-		    for (startIndex; startIndex < argsct; startIndex++) {
-		    	int tempPid = atoi(args[startIndex]);
-		    
-			    if (shellPid == tempPid) {
-		    		go = 0;
-		    		free(args[2]);
-               		free(args[1]);
-               		free(args[0]);
-               		free(args);
-                    free(pwd);
-                    freeList(pathlist);
-                    free(owd);
-                    free(commandline);
-                    free(prompt);
-                    kill(shellPid, signal);
-				}
-	            kill(tempPid, signal);
-        	 }
-		    free(args[2]);
-            free(args[1]);
-            free(args[0]);
-            free(args);
-	    	}
+                if (args[1][0] == '-') {
+                    startIndex = 2;
+                    signal = atoi(args[1]) * -1;
+                }
+
+                for (startIndex; startIndex < argsct; startIndex++) {
+                    int tempPid = atoi(args[startIndex]);
+
+                    if (shellPid == tempPid) {
+                        go = 0;
+                        free(args[2]);
+                        free(args[1]);
+                        free(args[0]);
+                        free(args);
+                        free(pwd);
+                        freeList(pathlist);
+                        free(owd);
+                        free(commandline);
+                        free(prompt);
+                        kill(shellPid, signal);
+                    }
+                    kill(tempPid, signal);
+                }
+                free(args[2]);
+                free(args[1]);
+                free(args[0]);
+                free(args);
+            }
         }
         //---------PROMPT--------------------------------------------------------------------------------
         else if (strcmp(args[0], "prompt") == 0) {
             printf("Executing Built-In command: [prompt]\n");
-            if (argsct == 2) { //if prompt then a prefix follows as the second argument
+            if (argsct == 2) {  //if prompt then a prefix follows as the second argument
                 memcpy(prompt, args[1], strlen(args[1]) + 1);
                 free(args[1]);
             } else {
@@ -250,42 +250,42 @@ int sh(int argc, char **argv, char **envp) {
                     printf("%s\n", *envp++);
                 }
             } else if (argsct == 2) {
-		      setenv(args[1], "", 1);
-		      free(args[1]);
-	    } else if (argsct == 3) {
-	      	  setenv(args[1], args[0], 1);
-		  free(args[1]);
-	    } else {
-		printf("setenv: Too many arugments\n");
-		for (int i = 1; i < argsct; i++) {
-			free(args[i]);
-		}
-	    }
-	    free(args[0]);
-	    free(args);
-	}
+                setenv(args[1], "", 1);
+                free(args[1]);
+            } else if (argsct == 3) {
+                setenv(args[1], args[0], 1);
+                free(args[1]);
+            } else {
+                printf("setenv: Too many arugments\n");
+                for (int i = 1; i < argsct; i++) {
+                    free(args[i]);
+                }
+            }
+            free(args[0]);
+            free(args);
+        }
 
-       //--------RUN-PROGRAMS--------------------------------------------------------------------------
-       //Implements wordexp to catch wildcards * and ?. Side affect is that after the command with wildcards is run, it will say after the command was not found but it still works. 
-	   else {
-            char *absPath = where(args[0], pathlist);           
-	    	for (int i = 0; i < argsct; i++) {
-			if (strchr(args[i], '*') != NULL || (strchr(args[i], '?') != NULL)) {
-                    		// printf("TEST: %s\n", strchr(*args, '*'));
-		    		int wildIndex = findWildIndex(args, argsct);
-           	    		wordexp_t p;
-               	    		char** word;
-                    		int position = 0;
-                    		wordexp(args[wildIndex], &p, 0);
-                    		word = p.we_wordv;
-                    		for (position = 0; position < p.we_wordc; position++) {
-		        		printf("%s\n", word[position]);    
-            	    		}							
-				   wordfree(&p);
-	   		} 
-		}  
-		
-	    printf("Executing user entered command: [%s]\n ", args[0]);
+        //--------RUN-PROGRAMS--------------------------------------------------------------------------
+        //Implements wordexp to catch wildcards * and ?. Side affect is that after the command with wildcards is run, it will say after the command was not found but it still works.
+        else {
+            char *absPath = where(args[0], pathlist);
+            for (int i = 0; i < argsct; i++) {
+                if (strchr(args[i], '*') != NULL || (strchr(args[i], '?') != NULL)) {
+                    // printf("TEST: %s\n", strchr(*args, '*'));
+                    int wildIndex = findWildIndex(args, argsct);
+                    wordexp_t p;
+                    char **word;
+                    int position = 0;
+                    wordexp(args[wildIndex], &p, 0);
+                    word = p.we_wordv;
+                    for (position = 0; position < p.we_wordc; position++) {
+                        printf("%s\n", word[position]);
+                    }
+                    wordfree(&p);
+                }
+            }
+
+            printf("Executing user entered command: [%s]\n ", args[0]);
             //printf("COUNT: %d\n", argsct);
             if (absPath == NULL) {
                 printf("Command not found: %s\n", args[0]);
@@ -294,7 +294,7 @@ int sh(int argc, char **argv, char **envp) {
                 pid_t pid = fork();
                 if (pid == 0) {  //child process
                     /*  else  program to exec */
-                    execve(absPath, args, envp);    
+                    execve(absPath, args, envp);
                     printf("ERROR\n");  //Code should never reach here! If it does there is a problem!
                     exit(0);
                 } else {  //parent process
@@ -314,11 +314,11 @@ int sh(int argc, char **argv, char **envp) {
 //findWildIndex() is a helper function used to determine the index where the wildcard appears in args.
 int findWildIndex(char **args, int argsct) {
     for (int i = 1; i < argsct; i++) {
-	for(int j = 0; j < strlen(args[i]); j++) {
-	    	if ((args[i][j] == '*') || (args[i][j] == '?')) {
-			return i;
-	    	}
-	}	
+        for (int j = 0; j < strlen(args[i]); j++) {
+            if ((args[i][j] == '*') || (args[i][j] == '?')) {
+                return i;
+            }
+        }
     }
     return 0;
 }
@@ -359,7 +359,7 @@ char **stringToArray(char *input, char **argv, int *argsCount) {
         count++;
     }
     argv = malloc((count + 2) * sizeof(char *));
-    argv[count+1] = NULL;
+    argv[count + 1] = NULL;
 
     count = 0;
     strcpy(buff, input);
@@ -402,12 +402,12 @@ char *which(char *command, struct pathelement *pathlist) {
 //which and where do the same thing.
 char *where(char *command, struct pathelement *pathlist) {
     printf("Executing Built-In command: [where]\n");
-    char *cmd = malloc(1024 * sizeof(char *)); 
+    char *cmd = malloc(1024 * sizeof(char *));
     struct pathelement *tempPath = pathlist;
     strcpy(cmd, command);
     while (pathlist) {  // WHERE
         if (command != NULL) {
-	        if (*command == '/' || *command == '.') {
+            if (*command == '/' || *command == '.') {
                 if (access(command, X_OK) == 0) {
                     char *returnStr = calloc(strlen(command) + 1, sizeof(char));
                     strncpy(returnStr, command, strlen(command));
@@ -416,17 +416,17 @@ char *where(char *command, struct pathelement *pathlist) {
                     return NULL;
                 }
             } else {
-            sprintf(cmd, "%s/%s", tempPath->element, command);
-            if (access(cmd, F_OK) == 0) {
-                printf("%s\n", cmd);
-                return cmd;
-            } else if (access(cmd, F_OK) != 0 && tempPath->next == NULL) {
-                free(cmd);
-                break;
+                sprintf(cmd, "%s/%s", tempPath->element, command);
+                if (access(cmd, F_OK) == 0) {
+                    printf("%s\n", cmd);
+                    return cmd;
+                } else if (access(cmd, F_OK) != 0 && tempPath->next == NULL) {
+                    free(cmd);
+                    break;
+                }
+                tempPath = tempPath->next;
             }
-            tempPath = tempPath->next;
-            }
-        }   
+        }
     }
     return NULL;
 } /* where() */
