@@ -409,10 +409,11 @@ char *where(char *command, struct pathelement *pathlist) {
         if (command != NULL) {
             if (*command == '/' || *command == '.') {
                 if (access(command, X_OK) == 0) {
-                    char *returnStr = calloc(strlen(command) + 1, sizeof(char));
-                    strncpy(returnStr, command, strlen(command));
-                    return returnStr;
+                   // char *returnStr = calloc(strlen(command) + 1, sizeof(char));
+                    strncpy(cmd, command, strlen(command));
+                    return cmd;
                 } else {
+                    free(cmd);
                     return NULL;
                 }
             } else {
