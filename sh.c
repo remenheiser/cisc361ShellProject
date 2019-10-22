@@ -170,42 +170,42 @@ int sh(int argc, char **argv, char **envp) {
             printf("Executing Built-In command: [kill]\n");
             if (argsct < 2) { //kill is either only element or kill without a signal or command following it
                 //Do Nothing
-		free(args[1]);
-		free(args[0]);
-		free(args);
-		printf("kill: Too few arguments.\n");	
+    		    free(args[1]);
+	    	    free(args[0]);
+		        free(args);
+		        printf("kill: Too few arguments.\n");	
             } else {  
                 int shellPid = getpid();
-		int signal = SIGTERM;
-		int startIndex = 1;
+		        int signal = SIGTERM;
+		        int startIndex = 1;
 
-		if (args[1][0] == '-') {
-	 		startIndex = 2;
-	    		signal = atoi(args[1]) * -1;
-		}
+		        if (args[1][0] == '-') {
+	 		        startIndex = 2;
+	    		    signal = atoi(args[1]) * -1;
+		        }   
 		
-		for (startIndex; startIndex < argsct; startIndex++) {
+		    for (startIndex; startIndex < argsct; startIndex++) {
 		    	int tempPid = atoi(args[startIndex]);
 		    
-			if (shellPid == tempPid) {
+			    if (shellPid == tempPid) {
 		    		go = 0;
 		    		free(args[2]);
-                    		free(args[1]);
-                    		free(args[0]);
-                    		free(args);
-                    		free(pwd);
-                    		freeList(pathlist);
-                    		free(owd);
-                    		free(commandline);
-                    		free(prompt);
-                    		kill(shellPid, signal);
+               		free(args[1]);
+               		free(args[0]);
+               		free(args);
+                    free(pwd);
+                    freeList(pathlist);
+                    free(owd);
+                    free(commandline);
+                    free(prompt);
+                    kill(shellPid, signal);
 				}
-	                kill(tempPid, signal);
-        	    	}
-		free(args[2]);
-                free(args[1]);
-                free(args[0]);
-                free(args);
+	            kill(tempPid, signal);
+        	 }
+		    free(args[2]);
+            free(args[1]);
+            free(args[0]);
+            free(args);
 	    	}
         }
         //---------PROMPT--------------------------------------------------------------------------------
@@ -250,10 +250,10 @@ int sh(int argc, char **argv, char **envp) {
                     printf("%s\n", *envp++);
                 }
             } else if (argsct == 2) {
-		      setenv(args[1], "", 0);
+		      setenv(args[1], "", 1);
 		      free(args[1]);
 	    } else if (argsct == 3) {
-	      	  setenv(args[1], args[0], 0);
+	      	  setenv(args[1], args[0], 1);
 		  free(args[1]);
 	    } else {
 		printf("setenv: Too many arugments\n");
@@ -289,11 +289,12 @@ int sh(int argc, char **argv, char **envp) {
             //printf("COUNT: %d\n", argsct);
             if (absPath == NULL) {
                 printf("Command not found: %s\n", args[0]);
+                free(absPath);
             } else {
                 pid_t pid = fork();
                 if (pid == 0) {  //child process
                     /*  else  program to exec */
-                    execve(absPath, args, envp);
+                    execve(absPath, args, envp);    
                     printf("ERROR\n");  //Code should never reach here! If it does there is a problem!
                     exit(0);
                 } else {  //parent process
@@ -401,11 +402,20 @@ char *which(char *command, struct pathelement *pathlist) {
 //which and where do the same thing.
 char *where(char *command, struct pathelement *pathlist) {
     printf("Executing Built-In command: [where]\n");
-    char *cmd = malloc(1024 * sizeof(char *));
+    char *cmd = malloc(1024 * sizeof(char *)); 
     struct pathelement *tempPath = pathlist;
     strcpy(cmd, command);
     while (pathlist) {  // WHERE
         if (command != NULL) {
+	        if (*command == '/' || *command == '.') {
+                if (access(command, X_OK) == 0) {
+                    char *returnStr = calloc(strlen(command) + 1, sizeof(char));
+                    strncpy(returnStr, command, strlen(command));
+                    return returnStr;
+                } else {
+                    return NULL;
+                }
+            } else {
             sprintf(cmd, "%s/%s", tempPath->element, command);
             if (access(cmd, F_OK) == 0) {
                 printf("%s\n", cmd);
@@ -415,7 +425,8 @@ char *where(char *command, struct pathelement *pathlist) {
                 break;
             }
             tempPath = tempPath->next;
-        }
+            }
+        }   
     }
     return NULL;
 } /* where() */

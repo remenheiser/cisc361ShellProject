@@ -6,11 +6,13 @@ void sig_handler(int signal);
 
 int main( int argc, char **argv, char **envp )
 {
-  signal(SIGINT, sig_handler);
-  signal(SIGTERM, sig_handler);
-  signal(SIGTSTP, sig_handler);
-  signal(EOF, sig_handler);
-  return sh(argc, argv, envp);
+  if ((int)getpid() != 0) {
+    signal(SIGINT, sig_handler);
+    signal(SIGTERM, sig_handler);
+    signal(SIGTSTP, sig_handler);
+    signal(EOF, sig_handler);
+    }  
+    return sh(argc, argv, envp);
 }
 
 void sig_handler(int signal)
