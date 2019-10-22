@@ -270,20 +270,20 @@ int sh(int argc, char **argv, char **envp) {
 	   else {
             char *absPath = where(args[0], pathlist);           
 	    	for (int i = 0; i < argsct; i++) {
-				if (strchr(args[i], '*') != NULL || (strchr(args[i], '?') != NULL)) {
-                    // printf("TEST: %s\n", strchr(*args, '*'));
+			if (strchr(args[i], '*') != NULL || (strchr(args[i], '?') != NULL)) {
+                    		// printf("TEST: %s\n", strchr(*args, '*'));
 		    		int wildIndex = findWildIndex(args, argsct);
-           	    	wordexp_t p;
-               	    char** word;
-                    int position = 0;
-                    wordexp(args[wildIndex], &p, 0);
-                    word = p.we_wordv;
-                    for (position = 0; position < p.we_wordc; position++) {
+           	    		wordexp_t p;
+               	    		char** word;
+                    		int position = 0;
+                    		wordexp(args[wildIndex], &p, 0);
+                    		word = p.we_wordv;
+                    		for (position = 0; position < p.we_wordc; position++) {
 		        		printf("%s\n", word[position]);    
-            	    }					
+            	    		}							
 				   wordfree(&p);
-	   			} 
-			}  
+	   		} 
+		}  
 		
 	    printf("Executing user entered command: [%s]\n ", args[0]);
             //printf("COUNT: %d\n", argsct);
@@ -313,11 +313,11 @@ int sh(int argc, char **argv, char **envp) {
 //findWildIndex() is a helper function used to determine the index where the wildcard appears in args.
 int findWildIndex(char **args, int argsct) {
     for (int i = 1; i < argsct; i++) {
-		for(int j = 0; j < strlen(args[i]); j++) {
+	for(int j = 0; j < strlen(args[i]); j++) {
 	    	if ((args[i][j] == '*') || (args[i][j] == '?')) {
-				return i;
+			return i;
 	    	}
-		}	
+	}	
     }
     return 0;
 }
