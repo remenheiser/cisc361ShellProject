@@ -170,39 +170,39 @@ int sh(int argc, char **argv, char **envp) {
             printf("Executing Built-In command: [kill]\n");
             if (argsct < 2) { //kill is either only element or kill without a signal or command following it
                 //Do Nothing
-				free(args[1]);
-				free(args[0]);
-				free(args);
-				printf("kill: Too few arguments.\n");	
+		free(args[1]);
+		free(args[0]);
+		free(args);
+		printf("kill: Too few arguments.\n");	
             } else {  
                 int shellPid = getpid();
-				int signal = SIGTERM;
-				int startIndex = 1;
+		int signal = SIGTERM;
+		int startIndex = 1;
 
-				if (args[1][0] == '-') {
-		    		startIndex = 2;
-		    		signal = atoi(args[1]) * -1;
-			}
+		if (args[1][0] == '-') {
+	 		startIndex = 2;
+	    		signal = atoi(args[1]) * -1;
+		}
 		
-			for (startIndex; startIndex < argsct; startIndex++) {
+		for (startIndex; startIndex < argsct; startIndex++) {
 		    	int tempPid = atoi(args[startIndex]);
 		    
-				if (shellPid == tempPid) {
+			if (shellPid == tempPid) {
 		    		go = 0;
 		    		free(args[2]);
-                    free(args[1]);
-                    free(args[0]);
-                    free(args);
-                    free(pwd);
-                    freeList(pathlist);
-                    free(owd);
-                    free(commandline);
-                    free(prompt);
-                    kill(shellPid, signal);
-					}
-                kill(tempPid, signal);
-            	}
-				free(args[2]);
+                    		free(args[1]);
+                    		free(args[0]);
+                    		free(args);
+                    		free(pwd);
+                    		freeList(pathlist);
+                    		free(owd);
+                    		free(commandline);
+                    		free(prompt);
+                    		kill(shellPid, signal);
+				}
+	                kill(tempPid, signal);
+        	    	}
+		free(args[2]);
                 free(args[1]);
                 free(args[0]);
                 free(args);
@@ -252,10 +252,15 @@ int sh(int argc, char **argv, char **envp) {
             } else if (argsct == 2) {
 		      setenv(args[1], "", 0);
 		      free(args[1]);
-	   	    } else {
+	    } else if (argsct == 3) {
 	      	  setenv(args[1], args[0], 0);
 		  free(args[1]);
-	    	}
+	    } else {
+		printf("setenv: Too many arugments\n");
+		for (int i = 1; i < argsct; i++) {
+			free(args[i]);
+		}
+	    }
 	    free(args[0]);
 	    free(args);
 	}
