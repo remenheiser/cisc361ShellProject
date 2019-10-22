@@ -251,10 +251,14 @@ int sh(int argc, char **argv, char **envp) {
                 }
             } else if (argsct == 2) {
 		      setenv(args[1], "", 0);
+		      free(args[1]);
 	   	    } else {
 	      	  setenv(args[1], args[0], 0);
+		  free(args[1]);
 	    	}
-		}
+	    free(args[0]);
+	    free(args);
+	}
 
        //--------RUN-PROGRAMS--------------------------------------------------------------------------
        //Implements wordexp to catch wildcards * and ?. Side affect is that after the command with wildcards is run, it will say after the command was not found but it still works. 
