@@ -382,17 +382,28 @@ char *which(char *command, struct pathelement *pathlist) {
     char *cmd = malloc(1024 * sizeof(char *));
     struct pathelement *tempPath = pathlist;
     strcpy(cmd, command);
-    while (pathlist) {  // WHICH, doing the same as where here for now
+    while (pathlist) {  // WHICH, does the same thing as where in this shell
         if (command != NULL) {
-            sprintf(cmd, "%s/%s", tempPath->element, command);
-            if (access(cmd, F_OK) == 0) {
-                printf("%s\n", cmd);
-                return cmd;
-            } else if (access(cmd, F_OK) != 0 && tempPath->next == NULL) {
-                free(cmd);
-                break;
+            if (*command == '/' || *command == '.') {
+                if (access(command, X_OK) == 0) {
+                   // char *returnStr = calloc(strlen(command) + 1, sizeof(char));
+                    strncpy(cmd, command, strlen(command));
+                    return cmd;
+                } else {
+                    free(cmd);
+                    return NULL;
+                }
+            } else {
+                sprintf(cmd, "%s/%s", tempPath->element, command);
+                if (access(cmd, F_OK) == 0) {
+                    printf("%s\n", cmd);
+                    return cmd;
+                } else if (access(cmd, F_OK) != 0 && tempPath->next == NULL) {
+                    free(cmd);
+                    break;
+                }
+                tempPath = tempPath->next;
             }
-            tempPath = tempPath->next;
         }
     }
     return NULL;
