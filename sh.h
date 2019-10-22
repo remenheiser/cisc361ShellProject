@@ -11,7 +11,7 @@ void list ( char *dir );
 void printenv(char **envp);
 void freeList(struct pathelement *pathlist);
 void intHandler(int);
-
+int findWildIndex(char **args, int argsct);
 
 #define PROMPTMAX 32
 #define MAXARGS 10
